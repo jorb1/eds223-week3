@@ -1,0 +1,101 @@
+---
+title: "Discussion session"
+author: "BJ"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(sf)
+library(tmap)
+```
+
+```{r}
+sb_protected_areas <- read_sf(here::here("data", "cpad_super_units_sb.shp")) %>% 
+  st_transform("ESRI:102009")
+
+sb_city_boundaries <- read_sf(here::here("data", "sb_city_boundaries_2003.shp")) %>%
+  st_transform("ESRI:102009")
+
+sb_county_boundary <- read_sf(here::here("data", "sb_county_boundary_2020.shp")) %>%
+  st_transform("ESRI:102009")
+
+aves <- read_sf(here::here("data", "aves_observations_2020_2024.shp")) %>%
+  st_transform("ESRI:102009")
+```
+
+Now, to meet this week’s learning objectives, your task:
+
+- Find how many bird observations are within protected areas in Santa Barbara County
+```{r}
+aves_PA_subset <- sb_protected_areas[aves, ]
+nrow(aves_PA_subset)
+```
+
+```{r}
+tm_shape(sb_protected_areas) +
+  tm_polygons() +
+  tm_shape(aves_PA_subset) +
+  tm_dots()
+```
+
+
+```{r}
+aves_PA_join <- st_join(aves, sb_protected_areas)
+nrow(aves_PA_join)
+```
+
+
+```{r}
+tm_shape(aves_PA_subset) +
+  tm_polygons() +
+  tm_shape(aves_PA_join) +
+  tm_dots()
+```
+
+
+```{r}
+st_crs(sb_protected_areas)$units
+```
+
+```{r}
+PAs_5km <- st_buffer(sb_protected_areas, dist = 500)
+```
+
+```{r}
+aves_PAs_5km <- PAs_5km[aves, ]
+nrow(aves_PAs_5km)
+```
+
+
+```{r}
+goleta <- sb_city_boundaries |>
+  filter(NAME == "Goleta")
+
+goleta_5km <- st_buffer(sb_protected_areas, dist = 500)
+```
+
+```{r}
+
+```
+
+
+- Show the different outputs from a spatial subset and a spatial join
+
+- Bonus Challenge: Try it out with a 5 km buffer around the protected areas too!
+
+Find the protected areas within 15 km of a city in Santa Barbara County
+
+Hint: Use dplyr::filter() to select a city from sb_city_boundaries
+
+Explore the different outputs with st_intersects(), st_intersection(), and st_within()
+
+Practice a distance-based join with st_is_within_distance()
+
+Find the distance between your city of choice and a protected area of your choice
+
+Note: st_distance() finds the distance between the geometries’ edges
